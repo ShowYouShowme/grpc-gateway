@@ -14,13 +14,16 @@ import (
 	gw "grpc-gateway/pkg/pb" // Update
 )
 
-// 增加鉴权
+// 增加鉴权 对指定路径鉴权
 func authMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		token := r.Header.Get("Authorization")
-		if token != "Bearer" {
-			http.Error(w, "unauthorized", http.StatusUnauthorized)
-			return
+		switch r.URL.Path {
+		case "/v1/secure_endpoint":
+			token := r.Header.Get("Authorization")
+			if token != "Bearer" {
+				http.Error(w, "unauthorized", http.StatusUnauthorized)
+				return
+			}
 		}
 		next.ServeHTTP(w, r)
 	})
