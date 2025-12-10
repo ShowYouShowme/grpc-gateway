@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package user;
+option go_package = "../pkg/pb";
+import "google/api/annotations.proto";
+
+service UserService {
+  // 定义 gRPC 方法
+  rpc GetUser(GetUserRequest) returns (UserInfoResponse) {
+    // HTTP 映射
+    option (google.api.http) = {
+      get: "/v1/users/{user_id}"  // REST 路径
+    };
+  }
+
+  rpc CreateUser(CreateUserRequest) returns (UserInfoResponse) {
+    option (google.api.http) = {
+      post: "/v1/users"
+      body: "*"   // POST 请求把整个消息体映射为 JSON
+    };
+  }
+}
+
+// 请求/响应消息
+message GetUserRequest {
+  int32 user_id = 1;
+}
+
+message CreateUserRequest {
+  string name = 1;
+  int32 age = 2;
+}
+
+message UserInfoResponse {
+  int32 user_id = 1;
+  string name = 2;
+  int32 age = 3;
+}
