@@ -14,6 +14,18 @@ import (
 	gw "grpc-gateway/pkg/pb" // Update
 )
 
+// 增加鉴权
+func authMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		token := r.Header.Get("Authorization")
+		if token != "Bearer" {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
 func run() error {
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
@@ -28,8 +40,9 @@ func run() error {
 		return err
 	}
 	fmt.Printf("gw Listening on port 8081\n")
+	handler := authMiddleware(mux)
 	// Start HTTP server (and proxy calls to gRPC server endpoint)
-	return http.ListenAndServe(":8081", mux)
+	return http.ListenAndServe(":8081", handler)
 }
 
 func main() {
